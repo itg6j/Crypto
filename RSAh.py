@@ -68,6 +68,21 @@ def isPrime(n) :
             return False 
     return True
 #result n,phi,e
+def extendEuclidean(a,b): 
+    s1, s2 = 1, 0
+    t1, t2 = 0, 1    
+    while b != 0:
+        q = a // b
+        r = a % b
+        a = b
+        b = r
+        s = s1 - q * s2
+        t = t1 - q * t2
+        s1, s2 = s2, s
+        t1, t2 = t2, t
+        if a != 1 : 
+            return None
+        return(s)
 def RSAKEY(p,q) : 
     if isPrime(p) == True and isPrime(q) == True : 
         n = p*q
@@ -76,7 +91,7 @@ def RSAKEY(p,q) :
             if 1<i and i<phi and gcd(phi,i) == 1 :
                 e = i 
                 break
-        d = pow(e,-1,phi)
+        d , s , t= extendEuclidean(e,phi)
         x = d*e%phi 
         if x == 1 : 
             return[n,phi,e,d,True]
