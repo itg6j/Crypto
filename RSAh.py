@@ -2,15 +2,22 @@ from math import isqrt,gcd
 import time 
 import random 
 def decryption(cipher, d, n):
-    decrypted_blocks, _,s = sam(cipher, d, n)
+    decrypted_blocks, h, s = sam(cipher, d, n)
     message = b""
-    for num, count in decrypted_blocks:
-        block = num.to_bytes(5, 'big')
+    byte_length = (n.bit_length() + 7) // 8  
+    for num in decrypted_blocks:
+        block = num.to_bytes(byte_length, 'big')
+        block = block.lstrip(b'\x00')
         message += block
-    return message
+    return message, h, s
 def decode(cipher, d, n):
-    message = decryption(cipher,d,n)
-    return message.decode('ascii', errors='ignore').rstrip()
+    c = str(cipher)
+    cipher_list = []
+    for i in range(0, len(c), 13):
+        block_str = c[i:i+13]
+        cipher_list.append(int(block_str))
+    message,h,s = decryption(cipher_list,d,n)
+    return message.decode('ascii', errors='ignore').rstrip(),h,s
 def encryption(en,e,n):
     m = encode(en) 
     blocks=[]
@@ -22,7 +29,7 @@ def encryption(en,e,n):
             count = BlockSize - len(block)
             block = block + (' ' * count).encode('utf-8')
         num = int.from_bytes(block,'big')
-        blocks.append((num, count))
+        blocks.append((num))
     cipher , count1 , status = sam(blocks,e,n)
     return cipher,count1,status
 # encode ascii int , count padding 
@@ -38,7 +45,7 @@ def sam(base,exp,mod):
     isTrue=[]
     sam1=[]
     count1 = []
-    for num, count in base : 
+    for num in base : 
         x = 1
         for i in e: 
             x = (x**2) % mod
@@ -51,7 +58,7 @@ def sam(base,exp,mod):
             isTrue.append(True)
         else : 
             isTrue.append(False)
-        sam1.append((x,count))
+        sam1.append((x))
     if all(isTrue) == True:   
         count1.append((square,multipliction,True))
     else : 
@@ -67,8 +74,8 @@ def isPrime(n) :
         if n %i == 0 : 
             return False 
     return True
-#result n,phi,e
-def extendEuclidean(a,b): 
+#result inverse 
+def extendEuclidean(a,b,phi): 
     s1, s2 = 1, 0
     t1, t2 = 0, 1    
     while b != 0:
@@ -80,16 +87,19 @@ def extendEuclidean(a,b):
         t = t1 - q * t2
         s1, s2 = s2, s
         t1, t2 = t2, t
-    return(s)
+    d = s1 % phi
+    return(d)
 def RSAKEY(p,q) : 
     if isPrime(p) == True and isPrime(q) == True : 
         n = p*q
         phi = (p-1)*(q-1) 
-        for i in range(2,phi):
-            if 1<i and i<phi and gcd(phi,i) == 1 :
-                e = i 
-                break
-        d= extendEuclidean(e,phi)
+        e = 65537
+        if gcd(e, phi) != 1:
+            for i in range(2,phi):
+                if 1<i and i<phi and gcd(phi,i) == 1 :
+                    e = i 
+                    break
+        d= extendEuclidean(e,phi,phi)
         x = (d*e)%phi 
         if x == 1 : 
             return[n,phi,e,d,True]
@@ -123,25 +133,40 @@ def PollardRho(n):
             p = d
             q = n//d
             return p,q
-p = 2097143
-q = 2097169
-message = "saif samer"
-key = RSAKEY(p,q)
-n = key[0]
-phi = key[1]
-e = key[2]
-d = key[3]
-cipher,count,status = encryption(message,e,n)
-x = [c[0] for c in cipher]
-print(f"[+] the encryption key is : {e}")
-print(f"[+] the dencryption key is : {d}")
-print(f"[+] the modula n {n}")
-print("[+] is e equal d ?:",key[4])
-print(f"[+] ciphertext : {x}")
+choose1 = input("[+] do you want encryption or decryption ? e/d : ")
+if choose1 == 'e' : 
+    choose = input("[+] do you want change factor ? y/n : ")
+    if choose == 'y' : 
+        p1 = int(input("[+] write first factor : "))
+        q1 = int(input("[+] write second factor : "))
+        p = p1
+        q = q1
+    else : 
+        p = 2097143
+        q = 2097169
+    #mc = input("[+] Enter message : ")
+    mc = "saifsamernasserabusnaneh"
+    key = RSAKEY(p,q)
+    n = key[0]
+    phi = key[1]
+    e = key[2]
+    d = key[3]
+    cipher,count,status = encryption(mc,e,n)
+    x = "".join([str(c) for c in cipher])
+    print(f"[+] the encryption key is : {e}")
+    print(f"[+] the dencryption key is : {d}")
+    print(f"[+] the modula n {n}")
+    print("[+] is e equal d ?:",key[4])
+    print(f"[+] ciphertext : {x}")
+elif choose1 == "d" : 
+    d = int(input("[+] Enter  d decryption key: "))
+    n = int(input("[+] Enter n modula : "))
+    cipher = int(input("[+] Enter ciphertext : "))
+    plain,count,status = decode(cipher,d,n)
+    print(f"[+] plaintext : {plain}")
+print("\n"*3,"-"*85,"\n"*3)
 print("[+] Is equal pow with Square-and-Mulltiply algortihm and ? ",count[0][2])
 print("[+] count with the bit length of the exponent ? :",status)
-plain = decode(cipher,d,n)
-print(f"[+] plaintext : {plain}")
 timestr = time.time()
 factor1,factor2 = trialDivision(n)
 timeend= time.time()
