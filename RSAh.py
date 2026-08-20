@@ -121,10 +121,14 @@ def trialDivision(n):
         q=q-1
     return p,q
 def PollardRho(n): 
+    start_time = time.time()  
+    timeout = 5 
     a = 2
     b = 2
     d = 0
     while True:
+        if time.time() - start_time > timeout:
+            return None
         a = ((a**2)+1) %n
         b = ((b**2)+1) %n
         b = ((b**2)+1) %n
@@ -133,6 +137,7 @@ def PollardRho(n):
             p = d
             q = n//d
             return p,q
+
 choose1 = input("[+] do you want encryption or decryption ? e/d : ")
 if choose1 == 'e' : 
     choose = input("[+] do you want change factor ? y/n : ")
