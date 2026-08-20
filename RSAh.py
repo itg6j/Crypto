@@ -166,6 +166,7 @@ elif choose1 == "d" :
     print(f"[+] plaintext : {plain}")
 print("\n"*3,"-"*85,"\n"*3)
 print("[+] Is equal pow with Square-and-Mulltiply algortihm and ? ",count[0][2])
+print(f"[+] round of square : {count[0][0]} and multiplication : {count[0][1]}")
 print("[+] count with the bit length of the exponent ? :",status)
 timestr = time.time()
 factor1,factor2 = trialDivision(n)
