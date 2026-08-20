@@ -80,9 +80,7 @@ def extendEuclidean(a,b):
         t = t1 - q * t2
         s1, s2 = s2, s
         t1, t2 = t2, t
-        if a != 1 : 
-            return None
-        return(s)
+    return(s)
 def RSAKEY(p,q) : 
     if isPrime(p) == True and isPrime(q) == True : 
         n = p*q
@@ -91,8 +89,8 @@ def RSAKEY(p,q) :
             if 1<i and i<phi and gcd(phi,i) == 1 :
                 e = i 
                 break
-        d , s , t= extendEuclidean(e,phi)
-        x = d*e%phi 
+        d= extendEuclidean(e,phi)
+        x = (d*e)%phi 
         if x == 1 : 
             return[n,phi,e,d,True]
         else : 
