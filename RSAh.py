@@ -36,6 +36,10 @@ def encryption(en,e,n):
 def encode(message) : 
     m = message.encode('ascii')
     filteM = bytes([b for b in m if 32 <= b <= 127])
+    return filteM# encode ascii int , count padding 
+def encode(message) : 
+    m = message.encode('ascii')
+    filteM = bytes([b for b in m if 32 <= b <= 127])
     return filteM
 # sam1: c or m count and padding  |||| count1 : num of square , ,multiplication and if == pow
 def sam(base,exp,mod): 
@@ -159,29 +163,37 @@ def PollardRho(n):
             q = n//d
             return p,q
 
-choose1 = input("[+] do you want encryption or decryption ? e/d : ")
+choose1 = input("[+] Do you want encryption or decryption ? e/d : ")
 if choose1 == 'e' : 
-    choose = input("[+] do you want change factor ? y/n : ")
-    if choose == 'y' : 
-        p1 = int(input("[+] write first factor : "))
-        q1 = int(input("[+] write second factor : "))
-        p = p1
-        q = q1
+    choose3 = input("[+] Do you want to encrypt it with your public key or with another key? 0/1 : ")
+    if choose3 == "0" : 
+        e = int(input("[+] Enter encryption key : "))
+        n = int(input("[+] Enter n : "))
+        mc = input("[+] Enter message : ")
     else : 
-        p = 2097143
-        q = 2097169
-    mc = input("[+] Enter message : ")
-    key = RSAKEY(p,q)
-    n = key[0]
-    phi = key[1]
-    e = key[2]
-    d = key[3]
+        choose = input("[+] Do you want change factor ? y/n : ")
+        if choose == 'y' : 
+            p1 = int(input("[+] write first factor : "))
+            q1 = int(input("[+] write second factor : "))
+            p = p1
+            q = q1
+        else : 
+            p = 2097143
+            q = 2097169
+        mc = input("[+] Enter message : ")
+        key = RSAKEY(p,q)
+        n = key[0]
+        phi = key[1]
+        e = key[2]
+        d = key[3]
+        cipher,count,status = encryption(mc,e,n)
+        x = "".join([str(c) for c in cipher])
+        print(f"[+] the encryption key is : {e}")
+        print(f"[+] the dencryption key is : {d}")
+        print(f"[+] the modula n {n}")
+        print("[+] is e equal d ?:",key[4])
     cipher,count,status = encryption(mc,e,n)
     x = "".join([str(c) for c in cipher])
-    print(f"[+] the encryption key is : {e}")
-    print(f"[+] the dencryption key is : {d}")
-    print(f"[+] the modula n {n}")
-    print("[+] is e equal d ?:",key[4])
     print(f"[+] ciphertext : {x}")
 elif choose1 == "d" : 
     d = int(input("[+] Enter  d decryption key: "))
