@@ -93,18 +93,13 @@ def extendEuclidean(a,b,phi):
 def Euler1(number) : 
     if number == 1 : 
         return 0 
-    x = isPrime(number)
-    if x == False : 
-        print("is not prime")
-    if x == True : 
+    else : 
         return number-1
 def Euler2 (number1,number2) : 
-    x = isPrime(number1)
-    y = isPrime(number2)
     z = GCD1(number1,number2)
-    if number1 == number2 and x== True and y == True and z == True : 
+    if number1 == number2 and z == True : 
         return (number1-1)*number2
-    if number1!=number2 and x == True and y == True and z == True: 
+    if number1!=number2 and z == True: 
         z = Euler1(number1)
         u = Euler1(number2)
         b = u*z
