@@ -90,10 +90,35 @@ def extendEuclidean(a,b,phi):
         t1, t2 = t2, t
     d = s1 % phi
     return(d)
+def Euler1(number) : 
+    if number == 1 : 
+        return 0 
+    x = isPrime(number)
+    if x == False : 
+        print("is not prime")
+    if x == True : 
+        return number-1
+def Euler2 (number1,number2) : 
+    x = isPrime(number1)
+    y = isPrime(number2)
+    z = GCD1(number1,number2)
+    if number1 == number2 and x== True and y == True and z == True : 
+        return (number1-1)*number2
+    if number1!=number2 and x == True and y == True and z == True: 
+        z = Euler1(number1)
+        u = Euler1(number2)
+        b = u*z
+        return b 
+def GCD1(number1,number2) : 
+    x = gcd(number1,number2)
+    if x == 1 : 
+        return True
+    else : 
+        return False
 def RSAKEY(p,q) : 
     if isPrime(p) == True and isPrime(q) == True : 
         n = p*q
-        phi = (p-1)*(q-1) 
+        phi =Euler2(p,q)
         e = 65537
         if gcd(e, phi) != 1:
             for i in range(2,phi):
