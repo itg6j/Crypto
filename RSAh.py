@@ -35,7 +35,8 @@ def encryption(en,e,n):
 # encode ascii int , count padding 
 def encode(message) : 
     m = message.encode('ascii')
-    return(m)
+    filteM = bytes([b for b in m if 32 <= b <= 127])
+    return filteM
 # sam1: c or m count and padding  |||| count1 : num of square , ,multiplication and if == pow
 def sam(base,exp,mod): 
     e = bin(exp)[2:]
@@ -149,8 +150,7 @@ if choose1 == 'e' :
     else : 
         p = 2097143
         q = 2097169
-    #mc = input("[+] Enter message : ")
-    mc = "saifsamernasserabusnaneh"
+    mc = input("[+] Enter message : ")
     key = RSAKEY(p,q)
     n = key[0]
     phi = key[1]
@@ -183,7 +183,6 @@ factor1,factor2 = PollardRho(n)
 timeend1 = time.time()
 time4 = timeend1-timestr1
 print(f"[+] The factor from attack Pollard rho is p = {factor1} q = {factor2}the time take{time4: .6f}s")
-print("--- Task 5: Factorization Performance Table ---")
 print(f"{'Bit Size':<10} | {'Trial Division (s)':<20} | {'Pollard Rho (s)':<20}")
 print("-" * 55)
 for bits in [20, 30, 40, 50]:
