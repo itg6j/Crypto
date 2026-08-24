@@ -1,21 +1,15 @@
 from math import isqrt
-def is_prime(num):
-    if num < 2:
-        return False
-    for i in range(2, isqrt(num) + 1):
-        if num % i == 0:
-            return False
-    return True
-n = 2077
+from sympy import isprime
+n = int(input("[+] Enter modulus : "))
 x = isqrt(n)
 p=x
 q=x
 while True:
-    if n % p == 0 and is_prime(p):
+    if n % p == 0 and isprime(p) == True:
         break
     p=p+1
 while True:
-    if n % q == 0 and is_prime(q):
+    if n % q == 0 and isprime(q) == True:
         break
     q=q-1
-print(p, q)
+print(f"[+] The factor is : {p} , {q}")
