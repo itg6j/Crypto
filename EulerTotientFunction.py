@@ -13,7 +13,7 @@ def Euler2 (number1,number2) :
     z = GCD1(number1,number2)
     if number1 == number2 and x== True and y == True and z == True : 
         return (number1-1)*number2
-    if number1!=number2 and x == True and y == True and z == True: 
+    if number1!=number2 and x == True and y == True and z == False: 
         z = Euler1(number1)
         u = Euler1(number2)
         b = u*z
