@@ -2,22 +2,21 @@ from math import gcd
 def Euler1(number) : 
     if number == 1 : 
         return 0 
-    x = is_prime(number)
-    if x == False : 
-        print("is not prime")
-    if x == True : 
+    else: 
         return number-1
 def Euler2 (number1,number2) : 
     x = is_prime(number1)
     y = is_prime(number2)
     z = GCD1(number1,number2)
-    if number1 == number2 and x== True and y == True and z == True : 
+    if number1 == number2 and x== True and y == True and z == False : 
         return (number1-1)*number2
-    if number1!=number2 and x == True and y == True and z == False: 
+    elif number1!=number2 and x == True and y == True and z == True: 
         z = Euler1(number1)
         u = Euler1(number2)
         b = u*z
         return b 
+    else : 
+        return None
 def GCD1(number1,number2) : 
     x = gcd(number1,number2)
     if x == 1 : 
@@ -26,13 +25,15 @@ def GCD1(number1,number2) :
         return False
 def is_prime(number) : 
     if number <=1:
-        print("number : ",number," is not prime")
+        print("[+] number : ",number,"is not prime")
         return False
     for i in range(2, int(number**0.5)+1) : 
         if number % i == 0 :
-            print("number : ",number," is not prime")
+            print("[+] number : ",number,"is not prime")
             return False
-    print("number : ",number," is prime")
+    print("[+] number : ",number,"is prime")
     return True
-x = Euler2(7,11)
-print(f"[+]phi n : {x}")
+p = int(input("[+] Enter p : "))
+q = int(input("[+] Enter q : "))
+x = Euler2(p,q)
+print(f"[+] phi n : {x}")
