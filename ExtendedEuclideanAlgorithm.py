@@ -21,4 +21,6 @@ z = (x*num1)+(y*num2)
 status = None
 if gcd == z : 
     status = True
+else : 
+    status = False
 print(f"[+] if s * a + t * b = gcd(a,b) ??? result = {z}, gcd = result : {status}")
