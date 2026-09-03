@@ -1,0 +1,43 @@
+from pwn import * # pip install pwntools
+import json
+import base64
+import codecs
+from Crypto.Util.number import long_to_bytes
+r = remote('socket.cryptohack.org', 13377, level = 'debug')
+def json_recv():
+    line = r.recvline()
+    return json.loads(line.decode())
+def json_send(hsh):
+    request = json.dumps(hsh).encode()
+    r.sendline(request)
+for i in range(101):
+    try:
+        received = json_recv()
+        if "flag" in received:
+            print("\n[+] flag :", received["flag"])
+            break
+        x = received["type"]
+        encoded_val = received["encoded"]
+        print(f"\n Level {i+1} | Type: {x}")
+
+        if x == "base64":
+            y = base64.b64decode(encoded_val).decode()
+        elif x == "hex":
+            y = bytes.fromhex(encoded_val).decode()
+        elif x == "rot13":
+            y = codecs.decode(encoded_val, 'rot_13')
+        elif x == "bigint":
+            y = long_to_bytes(int(encoded_val, 16)).decode()
+        elif x == "utf-8":
+            y = "".join([chr(b) for b in encoded_val])
+        else:
+            print(f"Unknown type: {x}")
+            break
+        print(f"Decoded value: {y}")
+        to_send = {
+            "decoded": y
+        }
+        json_send(to_send)
+    except Exception as e:
+        print(f"[-] Error occurred: {e}")
+        break
