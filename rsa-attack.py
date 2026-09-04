@@ -2,14 +2,9 @@ from Crypto.Util.number import GCD,long_to_bytes,isPrime
 from factordb.factordb import FactorDB
 from colorama import Style,Fore
 import gmpy2
-from math import isqrt,factorial
-import sys
-import threading 
+from math import isqrt
+import sys 
 import time
-dp = 0
-dq = 0
-p = 0
-q = 0
 ##FF : Fully Factored (the number is completely factored into primes)
 ##CF : Composite with some factors known (incompletely factored)
 ##C : Composite , but no factpr are know yet
@@ -162,9 +157,16 @@ def factoringWithKnownTotient(n,phi) :
         print(f"[+] q = {q}")
         print(f"[+] check (p * q == n): {p * q == n}")
         return p,q
+def CRTRSA(c,dp,dq,p,q) : 
+    qInv = pow(q,-1,p) 
+    m1 = pow(c , dp, p)
+    m2 = pow(c , dq, q)
+    h = (qInv * (m1 - m2)) % p
+    m = m2 + (h * q)
+    print(f"[+] message : {m}")
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
-n = int(input("[+] Enter modulus : "))
 if choose == "f" : 
+    n = int(input("[+] Enter modulus : "))
     status , factor1 = factor(n) 
     if status == "FF" :
         print("[+] factor :",factor1)
@@ -178,26 +180,37 @@ if choose == "f" :
         else : 
             bruteforce(n)
 elif choose == "a" : 
-    c = int(input("[+] Enter ciphertext : "))
-    e = int(input("[+] Enter public key : "))
-    x,y = factor(n)
-    if x =="P" : 
-        Nprime(c,e,n)
-    elif x == "FF": 
-        if len(y) >= 2 and y[0] == y[1] : 
-                p = isqrt(n)
-                phi = p * (p-1)
-                d = pow(e, -1, phi)
-                m = pow(c, d, n)
-                print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
-                sys.exit()
-        if n>c  : 
-            normalRsa(n,c,e,y)
-        elif dp !=0 and dq !=0 and p!=0 and q!= 0 : 
-            pass
-    elif n>c: 
-        smallExpnentAttack(c,e)
-    elif x =="C" : 
-        p,q = bruteforce(n)
-    else: 
-        print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
+    print("="*45)
+    print("\n[+] RSA-CRT Decryption (Fast using: p, q, dp, dq, c) ")
+    print("[+] Standard RSA Attack (Given: n, e, c)\n")
+    choose1 = input("Enter number  (1,2,...): ")
+    if choose1 == "2" : 
+        n = int(input("[+] Enter modulus : "))
+        c = int(input("[+] Enter ciphertext : "))
+        e = int(input("[+] Enter public key : "))
+        x,y = factor(n)
+        if x =="P" : 
+            Nprime(c,e,n)
+        elif x == "FF": 
+            if len(y) >= 2 and y[0] == y[1] : 
+                    p = isqrt(n)
+                    phi = p * (p-1)
+                    d = pow(e, -1, phi)
+                    m = pow(c, d, n)
+                    print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
+                    sys.exit()
+            if n>c  : 
+                normalRsa(n,c,e,y)
+        elif n>c: 
+            smallExpnentAttack(c,e)
+        elif x =="C" : 
+            p,q = bruteforce(n)
+        else: 
+            print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
+    elif choose1 == "1" : 
+        c = int(input("[+] Enter ciphertext : "))
+        dp = int(input("[+] Enter dp : "))
+        dq = int(input("[+] Enter dq : "))
+        p = int(input("[+] Enter p : "))
+        q = int(input("[+] Enter q : "))
+        CRTRSA(c,dp,dq,p,q)
