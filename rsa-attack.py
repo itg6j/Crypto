@@ -72,6 +72,7 @@ def Pollard(n):
     a = 2
     for k in range(2, B):
         if time.time() - strtime > timeout : 
+            print(f"[+] Time out = {timeout} Pollard P-1")
             return None, None
         a = pow(a, k, n)
         p = GCD(a - 1, n)
@@ -141,7 +142,8 @@ def bruteforce(n) :
         p,q = PollardRho(n)
     else : 
         p,q = Pollard(n)
-        p,q = fermatFactorization(n)
+        if p is None and q is None : 
+            p,q = fermatFactorization(n)
     print(f"[+] factor is p = {p} q = {q}")
     return p,q
 def factoringWithKnownTotient(n,phi) : 
