@@ -1,18 +1,15 @@
-from Crypto.Util.number import GCD,long_to_bytes
+from Crypto.Util.number import GCD,long_to_bytes,isPrime
 from factordb.factordb import FactorDB
 from colorama import Style,Fore
 import gmpy2
-from math import isqrt
+from math import isqrt,factorial
 import sys
-n = int(383347712330877040452238619329524841763392526146840572232926924642094891453979246383798913394114305368360426867021623649667024217266529000859703542590316063318592391925062014229671423777796679798747131250552455356061834719512365575593221216339005132464338847195248627639623487124025890693416305788160905762011825079336880567461033322240015771102929696350161937950387427696385850443727777996483584464610046380722736790790188061964311222153985614287276995741553706506834906746892708903948496564047090014307484054609862129530262108669567834726352078060081889712109412073731026030466300060341737504223822014714056413752165841749368159510588178604096191956750941078391415634472219765129561622344109769892244712668402761549412177892054051266761597330660545704317210567759828757156904778495608968785747998059857467440128156068391746919684258227682866083662345263659558066864109212457286114506228470930775092735385388316268663664139056183180238043386636254075940621543717531670995823417070666005930452836389812129462051771646048498397195157405386923446893886593048680984896989809135802276892911038588008701926729269812453226891776546037663583893625479252643042517196958990266376741676514631089466493864064316127648074609662749196545969926051)
-c = int(65537)
-e = int(98280456757136766244944891987028935843441533415613592591358482906016439563076150526116369842213103333480506705993633901994107281890187248495507270868621384652207697607019899166492132408348789252555196428608661320671877412710489782358282011364127799563335562917707783563681920786994453004763755404510541574502176243896756839917991848428091594919111448023948527766368304503100650379914153058191140072528095898576018893829830104362124927140555107994114143042266758709328068902664037870075742542194318059191313468675939426810988239079424823495317464035252325521917592045198152643533223015952702649249494753395100973534541766285551891859649320371178562200252228779395393974169736998523394598517174182142007480526603025578004665936854657294541338697513521007818552254811797566860763442604365744596444735991732790926343720102293453429936734206246109968817158815749927063561835274636195149702317415680401987150336994583752062565237605953153790371155918439941193401473271753038180560129784192800351649724465553733201451581525173536731674524145027931923204961274369826379325051601238308635192540223484055096203293400419816024111797903442864181965959247745006822690967920957905188441550106930799896292835287867403979631824085790047851383294389)
-f = FactorDB(n)
+import threading 
+import time
 dp = 0
 dq = 0
 p = 0
 q = 0
-f.connect()
 ##FF : Fully Factored (the number is completely factored into primes)
 ##CF : Composite with some factors known (incompletely factored)
 ##C : Composite , but no factpr are know yet
@@ -20,9 +17,6 @@ f.connect()
 ##PRP : Probably prime
 ##U : Unknown Status 
 ##Unit : The number is unit(specifically for the number 1 )
-x = f.get_status()
-y = f.get_factor_list()
-
 # n is p^2 
 def Nprime(c,e,n) : 
     phi = n-1
@@ -57,24 +51,153 @@ def normalRsa(n,c,e,f):
         except Exception as err:
             print(Fore.RED+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Could not convert to bytes:", err)
     except Exception : 
-        print(Fore.RED+Style.BRIGHT+"[-]"+Style.RESET_ALL+"Error")
-        
-if x =="P" : 
-    Nprime(c,e,n)
-elif x == "FF": 
-    if len(y) >= 2 and y[0] == y[1] : 
-            p = isqrt(n)
-            phi = p * (p-1)
-            d = pow(e, -1, phi)
-            m = pow(c, d, n)
-            print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
-            sys.exit()
-    if n>c  : 
-        normalRsa(n,c,e,f)
-    elif dp !=0 and dq !=0 and p!=0 and q!= 0 : 
-        pass
-elif c<n: 
-    smallExpnentAttack(c,e)
+        print(Fore.RED+Style.BRIGHT+"[-]"+Style.RESET_ALL+"Error") 
+def trialDivision(n) : 
 
-else: 
-    print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
+    x = isqrt(n)
+    p=x
+    q=x
+    while True:
+        if n % p == 0 and isPrime(p) == True:
+            break
+        p=p+1
+    while True:
+        if n % q == 0 and isPrime(q) == True :
+            break
+        q=q-1
+    if not (p*q == n) : 
+        q = n//p 
+    return p,q
+def Pollard(n):
+    strtime = time.time()
+    timeout = 60
+    B=100000
+    if n % 2 == 0:
+        return 2, n // 2        
+    a = 2
+    for k in range(2, B):
+        if time.time() - strtime > timeout : 
+            return None, None
+        a = pow(a, k, n)
+        p = GCD(a - 1, n)
+        if 1 < p < n:
+            return p, n // p
+        elif p == n:
+            break
+    return None, None
+def PollardRho(n) : 
+    strtime = time.time()
+    timeout = 60
+    d = 0
+    a = 2
+    b = 2
+    while True: 
+        if time.time() - strtime>timeout :
+            print(f"[+] Time out = {timeout} PollardRho")
+            return None,None
+        a = ((a**2)+1) %n
+        b = ((b**2)+1) %n
+        b = ((b**2)+1) %n
+        d = GCD((a-b),n)
+        if 1< d <n : 
+            print("p = : ",d)
+            q = n//d
+            print("q = : ",q)
+            n1 = d * q
+            if n == n1 : 
+                print(f"[+] {n1} = {d} x {q}: ",True)
+            break 
+    return p,q
+def fermatFactorization(n) : 
+    strtime = time.time()
+    timeout = 60
+    if n%2 == 0 : 
+        print("[+] number is even")
+        exit()
+    rootN = isqrt(n)
+    a = rootN
+    if a*a < n : 
+        a = a+1
+    while True : 
+        if time.time() - strtime>timeout :
+            print(f"[+] Time out = {timeout} Fermat Factorization")
+            return None,None
+        result = (a**2)-n
+        b = isqrt(result)
+        if b*b == result : 
+            if n == (a**2)-(b**2) : 
+                p = a+b
+                q = a-b
+                print(f"[+] factor is a ={a} q ={b}")
+                print(f"[+] factor is p = {p} q = {q}") 
+                break
+        a = a + 1
+    return p,q
+def factor(n) : 
+    f = FactorDB(n)
+    f.connect()
+    x = f.get_status()
+    y = f.get_factor_list()
+    return x,y
+def bruteforce(n) : 
+    if len(str(n))<= 8 :
+        p,q = trialDivision(n)
+    elif len(str(n))<= 12 :
+        p,q = PollardRho(n)
+    else : 
+        p,q = Pollard(n)
+        p,q = fermatFactorization(n)
+    print(f"[+] factor is p = {p} q = {q}")
+    return p,q
+def factoringWithKnownTotient(n,phi) : 
+    s= n - phi + 1
+    delta = s**2 - 4 * n
+    sqrt_delta = isqrt(delta)
+    if sqrt_delta * sqrt_delta != delta:
+        print("[+] wrong")
+    else:
+        p = (s + sqrt_delta) // 2
+        q = (s - sqrt_delta) // 2
+        print(f"[+] p = {p}")
+        print(f"[+] q = {q}")
+        print(f"[+] check (p * q == n): {p * q == n}")
+        return p,q
+choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
+n = int(input("[+] Enter modulus : "))
+if choose == "f" : 
+    status , factor1 = factor(n) 
+    if status == "FF" :
+        print("[+] factor :",factor1)
+        if 3>=len(factor1) :  
+            bruteforce(n)
+    elif status =="C" :
+        choose1 = input("[+] you know phi or Totient y/n : ") 
+        phi = int(input("[+] Enter phi : "))
+        if choose1 == "y" : 
+            factoringWithKnownTotient(n,phi)
+        else : 
+            bruteforce(n)
+elif choose == "a" : 
+    c = int(input("[+] Enter ciphertext : "))
+    e = int(input("[+] Enter public key : "))
+    x,y = factor(n)
+    if x =="P" : 
+        Nprime(c,e,n)
+    elif x == "FF": 
+        if len(y) >= 2 and y[0] == y[1] : 
+                p = isqrt(n)
+                phi = p * (p-1)
+                d = pow(e, -1, phi)
+                m = pow(c, d, n)
+                print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
+                sys.exit()
+        if n>c  : 
+            normalRsa(n,c,e,y)
+        elif dp !=0 and dq !=0 and p!=0 and q!= 0 : 
+            pass
+    elif n>c: 
+        smallExpnentAttack(c,e)
+    elif x =="C" : 
+        p,q = bruteforce(n)
+    else: 
+        print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
