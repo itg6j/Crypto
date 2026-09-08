@@ -4,12 +4,7 @@ def bytes2matrix(text):
 
 def matrix2bytes(matrix):
     """ Converts a 4x4 matrix into a 16-byte array.  """
-    list1 = []
-    for i in range(0,4) : 
-        for j in range(0,4) :
-            list1.append(matrix[i][j])
-    for i in list1 :
-        print(chr(i),end="")
+    return bytes([matrix[row][col] for row in range(4) for col in range(4)])
 matrix = [
     [99, 114, 121, 112],
     [116, 111, 123, 105],
