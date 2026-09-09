@@ -1,12 +1,17 @@
-p = 29 
-numbers = [14, 6, 11]
-for x in numbers:
-    for a in range(1, p):
-        if (a * a) % p == x:
-            root1 = a
-            root2 = p - a
-            smaller_root = min(root1, root2)
-            print("Quadratic Residues : ",x)
-            print("roots : ",root1,root2)
-            print("small root : ",smaller_root)
-            break
+from Crypto.Util.number import isPrime
+p = int(input("[+] Enter modulus : "))
+if isPrime(p) == False: 
+    print("[+] Not Prime")
+    exit()
+solution = (p - 1) // 2
+print(f"[+] you have solution : {solution}")
+list1 = []
+list2 = []
+for i in range(1, p): 
+    list1.append(i)
+    x = (i * i) % p
+    list2.append(x)
+qr = sorted(set(list2))
+qnr = [i for i in list1 if i not in qr]
+print(f"[+] Quadratic Residues ({len(qr)}): {qr}")
+print(f"[+] Quadratic Non-Residues : {qnr}")
