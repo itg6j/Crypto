@@ -1,10 +1,13 @@
-from Crypto.Util.number import GCD,long_to_bytes,isPrime
+from Crypto.Util.number import GCD,long_to_bytes,isPrime,inverse
 from factordb.factordb import FactorDB
 from colorama import Style,Fore
 import gmpy2
 from math import isqrt
+import math
 import sys 
 import time
+from random import randint
+from sage.all import *
 ##FF : Fully Factored (the number is completely factored into primes)
 ##CF : Composite with some factors known (incompletely factored)
 ##C : Composite , but no factpr are know yet
@@ -29,10 +32,13 @@ def smallExpnentAttack(c,e):
 def normalRsa(n,c,e,f):
     print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"status : ",f.get_status())
     print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"factor : ", f.get_factor_list())
-    factor = f.get_factor_list()
-    try : 
+    if p and q  : 
+        pass
+    else :     
+        factor = f.get_factor_list()
         p = factor[0]
         q = factor[1]
+    try : 
         phi = (p-1)*(q-1)
         if GCD(phi,e) == 1: 
             print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"found inverse")
@@ -47,6 +53,24 @@ def normalRsa(n,c,e,f):
             print(Fore.RED+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Could not convert to bytes:", err)
     except Exception : 
         print(Fore.RED+Style.BRIGHT+"[-]"+Style.RESET_ALL+"Error") 
+def normalRsa1(n,c,e,phi):
+    try : 
+        if GCD(phi,e) == 1: 
+            print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"found inverse")
+        d = inverse(e, phi)
+        m = pow(c,d,n)
+        try:
+            flag = long_to_bytes(m)
+            print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Decrypted Message/Flag : ", flag.decode('utf-8', errors='ignore'))
+        except Exception as err:
+            print(Fore.RED+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Could not convert to bytes:", err)
+    except Exception : 
+        print(Fore.RED+Style.BRIGHT+"[-]"+Style.RESET_ALL+"Error") 
+def ell(n,e,c,phi) : 
+    d = inverse(e, phi)
+    pt = pow(c, d, n)
+    decrypted = long_to_bytes(pt)
+    print(decrypted)
 def trialDivision(n) : 
 
     x = isqrt(n)
@@ -103,7 +127,7 @@ def PollardRho(n) :
             if n == n1 : 
                 print(f"[+] {n1} = {d} x {q}: ",True)
             break 
-    return p,q
+    return p,d
 def fermatFactorization(n) : 
     strtime = time.time()
     timeout = 60
@@ -144,6 +168,8 @@ def bruteforce(n) :
         p,q = Pollard(n)
         if p is None and q is None : 
             p,q = fermatFactorization(n)
+            if p is None and q is None : 
+                p,q = ECM(n)
     print(f"[+] factor is p = {p} q = {q}")
     return p,q
 def factoringWithKnownTotient(n,phi) : 
@@ -159,6 +185,10 @@ def factoringWithKnownTotient(n,phi) :
         print(f"[+] q = {q}")
         print(f"[+] check (p * q == n): {p * q == n}")
         return p,q
+def ECM(n) :
+    p =ecm.factor(Integer(n))
+    q = 0
+    return p ,q
 def CRTRSA(c,dp,dq,p,q) : 
     qInv = pow(q,-1,p) 
     m1 = pow(c , dp, p)
@@ -166,14 +196,34 @@ def CRTRSA(c,dp,dq,p,q) :
     h = (qInv * (m1 - m2)) % p
     m = m2 + (h * q)
     print(f"[+] message : {m}")
+def factorizationNgivenD(n,e,d) : 
+    k = (e*d)-1
+    while True : 
+        g = randint(2,n-1)
+        common = math.gcd(g, n)
+        if 1 < common < n:
+            p = common
+            q = n // p
+            print(f"[+] p = {p} q ={q}")
+            break
+        t = k//2
+        while t % 2 == 0:
+                t //= 2
+                x = pow(g, t, n)
+                if x > 1:
+                    y = math.gcd(x - 1, n)
+                    if 1 < y < n:
+                        p = y
+                        q = n // p
+                        break
+        return p , q 
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
 if choose == "f" : 
     n = int(input("[+] Enter modulus : "))
     status , factor1 = factor(n) 
     if status == "FF" :
         print("[+] factor :",factor1)
-        if 3>=len(factor1) :  
-            bruteforce(n)
+        bruteforce(n)
     elif status =="C" :
         choose1 = input("[+] you know phi or Totient y/n : ") 
         phi = int(input("[+] Enter phi : "))
@@ -184,7 +234,9 @@ if choose == "f" :
 elif choose == "a" : 
     print("="*45)
     print("\n[+] RSA-CRT Decryption (Fast using: p, q, dp, dq, c) ")
-    print("[+] Standard RSA Attack (Given: n, e, c)\n")
+    print("[+] Standard RSA Attack (Given: n, e, c)")
+    print("[+] Elliptic Curve Factorization Method(ECM)")
+    print("[+] Factorization N given d (n,d,c,e)\n")
     choose1 = input("Enter number  (1,2,...): ")
     if choose1 == "2" : 
         n = int(input("[+] Enter modulus : "))
@@ -201,12 +253,14 @@ elif choose == "a" :
                     m = pow(c, d, n)
                     print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
                     sys.exit()
-            if n>c  : 
+            if n>c:  
                 normalRsa(n,c,e,y)
         elif n>c: 
             smallExpnentAttack(c,e)
         elif x =="C" : 
             p,q = bruteforce(n)
+            phi = (p-1)*(q-1)
+            normalRsa1(n,c,e,phi)
         else: 
             print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
     elif choose1 == "1" : 
@@ -216,3 +270,26 @@ elif choose == "a" :
         p = int(input("[+] Enter p : "))
         q = int(input("[+] Enter q : "))
         CRTRSA(c,dp,dq,p,q)
+    elif choose1 == "3" : 
+        n = int(input("[+] Enter modulus : "))
+        c = int(input("[+] Enter ciphertext : "))
+        e = int(input("[+] Enter public key : "))
+        p,q = ECM(n)
+        phi = 1
+        print(p)
+        print(q)
+        for i in p:
+            phi *= (i-1)
+        print(phi)
+        ell(n,e,c,phi)
+    elif choose1 == "4" : 
+        n = int(input("[+] Enter modulus : "))
+        e = int(input("[+] Enter public key : "))
+        d = int(input("[+] Enter private key : "))
+        p ,q = factorizationNgivenD(n,e,d)
+        if isPrime(p) == False : 
+            print(f"[+] p is not prime")
+        if isPrime(q) == False : 
+            print(f"[+] p is not prime")
+        
+        
