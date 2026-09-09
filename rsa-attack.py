@@ -217,6 +217,16 @@ def factorizationNgivenD(n,e,d) :
                         q = n // p
                         break
         return p , q 
+def rsawithe(n,e,c,phi) : 
+    d_values = []
+    for  i in e:
+        d_i = inverse(i, phi)
+        d_values.append(d_i)
+    cipher_int = c
+    for d_i in reversed(d_values):
+        cipher_int = pow(cipher_int, d_i, n)
+    flag_bytes = long_to_bytes(cipher_int)
+    print(f"\nFlag: {flag_bytes.decode()}")
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
 if choose == "f" : 
     n = int(input("[+] Enter modulus : "))
@@ -284,12 +294,29 @@ elif choose == "a" :
         ell(n,e,c,phi)
     elif choose1 == "4" : 
         n = int(input("[+] Enter modulus : "))
-        e = int(input("[+] Enter public key : "))
+        e = 65537
         d = int(input("[+] Enter private key : "))
         p ,q = factorizationNgivenD(n,e,d)
         if isPrime(p) == False : 
             print(f"[+] p is not prime")
         if isPrime(q) == False : 
             print(f"[+] p is not prime")
-        
+        choose5 = input("[+] Do you want decrypt message y/n??")
+        if choose5 == "y" : 
+            c = int(input("[+] Enter ciphertext : "))
+            choose6 = input("[+] Do you have one or more public key  o/m : ") 
+            phi = (p-1)*(q-1)
+            if choose6 == "o" : 
+                e = int(input("[+] Enter public key : "))
+                normalRsa1(n,c,e,phi)
+            else : 
+                    liste = []
+                    choose7 = int(input("[+] Enter number of public key : "))
+                    for i in range(0,choose7) :
+                        e = int(input("[+] Enter public key (e) : "))
+                        liste.append(e)
+                    rsawithe(n,liste,c,phi)
+        else : 
+            print(f"[+] p is = {p}")
+            print(f"[+] q is = {q}")        
         
