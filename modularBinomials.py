@@ -13,3 +13,4 @@ c2 = int(input("[+] Enter ciphertext 2 : "))
 p ,q = modularBionmials(e1,e2,c1,c2,n,a1,a2)
 print(f"[+] p = {p}")
 print(f"[+] q = {q}")
+
