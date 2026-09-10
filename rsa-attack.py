@@ -226,7 +226,11 @@ def rsawithe(n,e,c,phi) :
     for d_i in reversed(d_values):
         cipher_int = pow(cipher_int, d_i, n)
     flag_bytes = long_to_bytes(cipher_int)
-    print(f"\nFlag: {flag_bytes.decode()}")
+    print(f"[+] message : {flag_bytes.decode()}")
+def modularBionmials(e1,e2,c1,c2,N,a1,a2) : 
+    q = GCD(pow(a2,(-e2 * e1),N) * pow(c2, e1, N) - pow(a1, (-e1 * e2), N) * pow(c1, e2, N), N)
+    p = N//q
+    return p ,q 
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
 if choose == "f" : 
     n = int(input("[+] Enter modulus : "))
@@ -246,7 +250,8 @@ elif choose == "a" :
     print("\n[+] RSA-CRT Decryption (Fast using: p, q, dp, dq, c) ")
     print("[+] Standard RSA Attack (Given: n, e, c)")
     print("[+] Elliptic Curve Factorization Method(ECM)")
-    print("[+] Factorization N given d (n,d,c,e)\n")
+    print("[+] Factorization N given d (n,d,c,e)")
+    print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2)\n")
     choose1 = input("Enter number  (1,2,...): ")
     if choose1 == "2" : 
         n = int(input("[+] Enter modulus : "))
@@ -319,4 +324,14 @@ elif choose == "a" :
         else : 
             print(f"[+] p is = {p}")
             print(f"[+] q is = {q}")        
-        
+    elif choose1 == "5" : 
+        n = int(input("[+] Enter modulus : "))
+        e1 = int(input("[+] Enter exponent first equation : "))
+        a1 = int(input("[+] Enter first number a : "))
+        c1 = int(input("[+] Enter ciphertext 1 : "))
+        e2 = int(input("[+] Enter exponent second equation : "))
+        a2 = int(input("[+] Enter second number a : "))
+        c2 = int(input("[+] Enter ciphertext 2 : "))
+        p ,q = modularBionmials(e1,e2,c1,c2,n,a1,a2)
+        print(f"\n\n[+] p = {p}")
+        print(f"\n[+] q = {q}")
