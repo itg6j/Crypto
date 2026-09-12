@@ -12,11 +12,16 @@ if choose == "e" :
     cipher = AES.new(key,AES.MODE_CBC,iv)
     ciphertext = cipher.encrypt(pad(flag,AES.block_size))
     civ = iv+ciphertext
-    print(civ.hex())
+    print("[+] ciphertext :",civ.hex())
 else :
     raw = bytes.fromhex(flag.decode())
-    riv = raw[:16]
+    x = input("[+] Do you know iv  y/n (hex): ")
+    if x =="y" : 
+        y = input("[+] Enter you iv : ")
+        riv = bytes.fromhex(y)
+    else :
+        riv = raw[:16]
     ciphertext = raw[16:]
     decipher = AES.new(key,AES.MODE_CBC,riv)
     deciphertext = unpad(decipher.decrypt(ciphertext),AES.block_size)
-    print(deciphertext.decode())
+    print("[+]Message :",deciphertext.decode())
