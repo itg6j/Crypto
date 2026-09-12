@@ -2,6 +2,9 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 key = input("[+] Enter key size(16,24,32)byte: ")
 flag = input("[+] Enter message or ciphertext : ")
+if len(key) not in (16,24,32) : 
+    print("[+] Error: Key length must be exactly 16, 24, or 32 bytes.")
+    exit()
 KEY = key.encode()
 FLAG = flag
 choose = input("[+] Do you want encrypt or decrypt (e/d): ")
