@@ -2,6 +2,7 @@ import galois
 from sys import exit
 from sympy import isprime
 import plotext
+from math import sqrt 
 def additionPoint(x1,y1,x2,y2,a,p):
     if x1 is None:
         return x2, y2
@@ -25,6 +26,7 @@ print("[+] Do you want all point  galois field ??")
 print("[+] Do you want check if  the point at infinity ?? ")
 print("[+] Elliptic Curve Discrete Logarithm Problem ")
 print("[+] Do you want addition point ")
+print("[+] Hasse's theorem the number of points on the curve is dentoted : ")
 point = input("[+] Enter number 1,2 ... : ")
 p = int(input("[+] Enter GF (galois field): "))
 if isprime(p) == False: 
@@ -148,3 +150,7 @@ elif point == "5" :
         y1 = int(input("[+] Enter y second point : "))
         x3,y3 = additionPoint(x1,y1,x1,y1,a1,p)
         print(f"[+] point is P({x3},{y3})")
+elif point == "6" : 
+    x = (p+1)-(2*sqrt(p))
+    y = (p+1)+(2*sqrt(p))
+    print(f"[+] Hasse's theorem the number of points on this curve definitely falls within the range from {int(x)} to {int(y)}")
