@@ -96,15 +96,17 @@ def smallExpnentAttack(c,e):
     if exact == True : 
         x = long_to_bytes(int(m))
         print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+x.decode('utf-8', errors='ignore'))
-def normalRsa(n,c,e,f):
-    print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"status : ",f.get_status())
-    print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"factor : ", f.get_factor_list())
-    if p and q  : 
-        pass
-    else :     
+def normalRsa(n,c,e):
+    try : 
+        f = FactorDB(n)
+        f.connect()
+        print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"status : ",f.get_status())
+        print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"factor : ", f.get_factor_list()) 
         factor = f.get_factor_list()
         p = factor[0]
         q = factor[1]
+    except Exception : 
+        p,q = bruteforce(n)
     try : 
         phi = (p-1)*(q-1)
         if GCD(phi,e) == 1: 
@@ -336,7 +338,7 @@ elif choose == "a" :
                     print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
                     sys.exit()
             if n>c:  
-                normalRsa(n,c,e,y)
+                normalRsa(n,c,e)
         elif n>c: 
             smallExpnentAttack(c,e)
         elif x =="C" : 
