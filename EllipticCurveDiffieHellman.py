@@ -1,4 +1,3 @@
-import galois
 from sys import exit
 from sympy import isprime
 def additionPoint(x1, y1, x2, y2, a, p):
@@ -29,18 +28,39 @@ if not isprime(p):
 if p <= 3: 
     print("[+] p is so small")
     exit()
-GF = galois.GF(p)
 a1 = int(input("[+] Enter a : "))
 b1 = int(input("[+] Enter b : "))
 px = int(input("[+] Enter Px : "))
 py = int(input("[+] Enter Py : "))
-xa = int(input("[+] Enter key private for first person : "))
-xb = int(input("[+] Enter key private for second person : "))
-ax, ay = multiplyPoint(xa, px, py, a1, p)
-print(f"[+] Alice Public Key A = ({ax}, {ay})")
-bx, by = multiplyPoint(xb, px, py, a1, p)
-print(f"[+] Bob Public Key B = ({bx}, {by})")
-tab_alice_x, tab_alice_y = multiplyPoint(xa, bx, by, a1, p)
-tab_bob_x, tab_bob_y = multiplyPoint(xb, ax, ay, a1, p)
-if tab_alice_x == tab_bob_x and tab_alice_y == tab_bob_y : 
-    print(f"[+] The secret key ({tab_alice_x},{tab_alice_y})")
+choose = input("[+] Enter do you have private key for both ?y/n : ")
+if choose =="y" : 
+    xa = int(input("[+] Enter key private for first person : "))
+    xb = int(input("[+] Enter key private for second person : "))
+    ax, ay = multiplyPoint(xa, px, py, a1, p)
+    print(f"[+] Alice Public Key A = ({ax}, {ay})")
+    bx, by = multiplyPoint(xb, px, py, a1, p)
+    print(f"[+] Bob Public Key B = ({bx}, {by})")
+    tab_alice_x, tab_alice_y = multiplyPoint(xa, bx, by, a1, p)
+    tab_bob_x, tab_bob_y = multiplyPoint(xb, ax, ay, a1, p)
+    if tab_alice_x == tab_bob_x and tab_alice_y == tab_bob_y : 
+        print(f"[+] The secret key ({tab_alice_x},{tab_alice_y})")
+else : 
+    xa = int(input("[+] Enter key private for first person : "))
+    choose1 = input("[+] Do you have point (x,y) : ")
+    if choose1 == "y" :  
+        bx = int(input("[+] Enter Public Key x : "))
+        by = int(input("[+] Enter Public Key y : "))
+    else : 
+        Aq = int(input("[+] Enter number It will be made up for elsewhere x in equation : "))
+        rhs = (pow(Aq, 3, p) + a1 * Aq + b1) % p
+        if pow(rhs, (p - 1) // 2, p) != 1:
+            print("[+] No valid point on the curve for this x")
+            exit()
+        yequation = pow(rhs, (p + 1) // 4, p)
+        print(f"[+] P({Aq}, {yequation}) or P({Aq}, {p - yequation})")
+        bx = Aq
+        by = yequation
+    ax, ay = multiplyPoint(xa, px, py, a1, p)
+    print(f"[+] Your Public Key A = ({ax}, {ay})")    
+    shared_x, shared_y = multiplyPoint(xa, bx, by, a1, p)
+    print(f"[+] The secret key is ({shared_x}, {shared_y})")
