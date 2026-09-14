@@ -16,6 +16,13 @@ from sage.all import *
 ##U : Unknown Status 
 ##Unit : The number is unit(specifically for the number 1 )
 # n is p^2 
+def helloman(n : str) : 
+    if n.startswith("0x") : 
+        x = n[2:]
+        y = bytes.fromhex(x)
+        z = int.from_bytes(y)
+        return z
+    return int(n)
 def legendre_symbol(a, p) -> int:
     ls = pow(a, (p - 1) // 2, p)
     return -1 if ls == p - 1 else ls
@@ -238,7 +245,10 @@ def bruteforce(n) :
         if p is None and q is None : 
             p,q = fermatFactorization(n)
             if p is None and q is None : 
-                p,q = ECM(n)
+                try:
+                    p,q = ECM(n)
+                except : 
+                    print("[+] Time out = 60 Elliptic Curve Factorization")
     print(f"[+] factor is p = {p} q = {q}")
     return p,q
 def factoringWithKnownTotient(n,phi) : 
@@ -254,6 +264,7 @@ def factoringWithKnownTotient(n,phi) :
         print(f"[+] q = {q}")
         print(f"[+] check (p * q == n): {p * q == n}")
         return p,q
+@fork(timeout=60)
 def ECM(n) :
     p =ecm.factor(Integer(n))
     q = 0
@@ -301,106 +312,110 @@ def modularBionmials(e1,e2,c1,c2,N,a1,a2) :
     p = N//q
     return p ,q 
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
-if choose == "f" : 
-    n = int(input("[+] Enter modulus : "))
-    status , factor1 = factor(n) 
-    if status == "FF" :
-        print("[+] factor :",factor1)
-        bruteforce(n)
-    elif status =="C" :
-        choose1 = input("[+] you know phi or Totient y/n : ") 
-        phi = int(input("[+] Enter phi : "))
-        if choose1 == "y" : 
-            factoringWithKnownTotient(n,phi)
-        else : 
+try : 
+    if choose == "f" : 
+        n = input("[+] Enter modulus : ")
+        n = helloman(n)
+        status , factor1 = factor(n) 
+        if status == "FF" :
+            print("[+] factor :",factor1)
             bruteforce(n)
-elif choose == "a" : 
-    print("="*45)
-    print("\n[+] RSA-CRT Decryption (Fast using: p, q, dp, dq, c) ")
-    print("[+] Standard RSA Attack (Given: n, e, c)")
-    print("[+] Elliptic Curve Factorization Method(ECM)")
-    print("[+] Factorization N given d (n,d,c,e)")
-    print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2)\n")
-    choose1 = input("Enter number  (1,2,...): ")
-    if choose1 == "2" : 
-        n = int(input("[+] Enter modulus : "))
-        c = int(input("[+] Enter ciphertext : "))
-        e = int(input("[+] Enter public key : "))
-        x,y = factor(n)
-        if x =="P" : 
-            Nprime(c,e,n)
-        elif x == "FF": 
-            if len(y) >= 2 and y[0] == y[1] : 
-                    p = isqrt(n)
-                    phi = p * (p-1)
-                    d = pow(e, -1, phi)
-                    m = pow(c, d, n)
-                    print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
-                    sys.exit()
-            if n>c:  
-                normalRsa(n,c,e)
-        elif n>c: 
-            smallExpnentAttack(c,e)
-        elif x =="C" : 
-            p,q = bruteforce(n)
-            phi = (p-1)*(q-1)
-            normalRsa1(n,c,e,phi)
-        else: 
-            print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
-    elif choose1 == "1" : 
-        c = int(input("[+] Enter ciphertext : "))
-        dp = int(input("[+] Enter dp : "))
-        dq = int(input("[+] Enter dq : "))
-        p = int(input("[+] Enter p : "))
-        q = int(input("[+] Enter q : "))
-        CRTRSA(c,dp,dq,p,q)
-    elif choose1 == "3" : 
-        n = int(input("[+] Enter modulus : "))
-        c = int(input("[+] Enter ciphertext : "))
-        e = int(input("[+] Enter public key : "))
-        p,q = ECM(n)
-        phi = 1
-        print(p)
-        print(q)
-        for i in p:
-            phi *= (i-1)
-        print(phi)
-        ell(n,e,c,phi)
-    elif choose1 == "4" : 
-        n = int(input("[+] Enter modulus : "))
-        e = 65537
-        d = int(input("[+] Enter private key : "))
-        p ,q = factorizationNgivenD(n,e,d)
-        if isPrime(p) == False : 
-            print(f"[+] p is not prime")
-        if isPrime(q) == False : 
-            print(f"[+] p is not prime")
-        choose5 = input("[+] Do you want decrypt message y/n??")
-        if choose5 == "y" : 
-            c = int(input("[+] Enter ciphertext : "))
-            choose6 = input("[+] Do you have one or more public key  o/m : ") 
-            phi = (p-1)*(q-1)
-            if choose6 == "o" : 
-                e = int(input("[+] Enter public key : "))
-                normalRsa1(n,c,e,phi)
+        elif status =="C" :
+            choose1 = input("[+] you know phi or Totient y/n : ") 
+            phi = int(input("[+] Enter phi : "))
+            if choose1 == "y" : 
+                factoringWithKnownTotient(n,phi)
             else : 
-                    liste = []
-                    choose7 = int(input("[+] Enter number of public key : "))
-                    for i in range(0,choose7) :
-                        e = int(input("[+] Enter public key (e) : "))
-                        liste.append(e)
-                    rsawithe(n,liste,c,phi)
-        else : 
-            print(f"[+] p is = {p}")
-            print(f"[+] q is = {q}")        
-    elif choose1 == "5" : 
-        n = int(input("[+] Enter modulus : "))
-        e1 = int(input("[+] Enter exponent first equation : "))
-        a1 = int(input("[+] Enter first number a : "))
-        c1 = int(input("[+] Enter ciphertext 1 : "))
-        e2 = int(input("[+] Enter exponent second equation : "))
-        a2 = int(input("[+] Enter second number a : "))
-        c2 = int(input("[+] Enter ciphertext 2 : "))
-        p ,q = modularBionmials(e1,e2,c1,c2,n,a1,a2)
-        print(f"\n\n[+] p = {p}")
-        print(f"\n[+] q = {q}")
+                bruteforce(n)
+    elif choose == "a" : 
+        print("="*45)
+        print("\n[+] RSA-CRT Decryption (Fast using: p, q, dp, dq, c) ")
+        print("[+] Standard RSA Attack (Given: n, e, c)")
+        print("[+] Elliptic Curve Factorization Method(ECM)")
+        print("[+] Factorization N given d (n,d,c,e)")
+        print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2)\n")
+        choose1 = input("Enter number  (1,2,...): ")
+        if choose1 == "2" : 
+            n = int(input("[+] Enter modulus : "))
+            c = int(input("[+] Enter ciphertext : "))
+            e = int(input("[+] Enter public key : "))
+            x,y = factor(n)
+            if x =="P" : 
+                Nprime(c,e,n)
+            elif x == "FF": 
+                if len(y) >= 2 and y[0] == y[1] : 
+                        p = isqrt(n)
+                        phi = p * (p-1)
+                        d = pow(e, -1, phi)
+                        m = pow(c, d, n)
+                        print(Fore.CYAN+Style.BRIGHT+"[+]"+Style.RESET_ALL+"Flag String:", long_to_bytes(m).decode("utf-8", errors="ignore"))
+                        sys.exit()
+                if n>c:  
+                    normalRsa(n,c,e)
+            elif n>c: 
+                smallExpnentAttack(c,e)
+            elif x =="C" : 
+                p,q = bruteforce(n)
+                phi = (p-1)*(q-1)
+                normalRsa1(n,c,e,phi)
+            else: 
+                print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
+        elif choose1 == "1" : 
+            c = int(input("[+] Enter ciphertext : "))
+            dp = int(input("[+] Enter dp : "))
+            dq = int(input("[+] Enter dq : "))
+            p = int(input("[+] Enter p : "))
+            q = int(input("[+] Enter q : "))
+            CRTRSA(c,dp,dq,p,q)
+        elif choose1 == "3" : 
+            n = int(input("[+] Enter modulus : "))
+            c = int(input("[+] Enter ciphertext : "))
+            e = int(input("[+] Enter public key : "))
+            p,q = ECM(n)
+            phi = 1
+            print(p)
+            print(q)
+            for i in p:
+                phi *= (i-1)
+            print(phi)
+            ell(n,e,c,phi)
+        elif choose1 == "4" : 
+            n = int(input("[+] Enter modulus : "))
+            e = 65537
+            d = int(input("[+] Enter private key : "))
+            p ,q = factorizationNgivenD(n,e,d)
+            if isPrime(p) == False : 
+                print(f"[+] p is not prime")
+            if isPrime(q) == False : 
+                print(f"[+] p is not prime")
+            choose5 = input("[+] Do you want decrypt message y/n??")
+            if choose5 == "y" : 
+                c = int(input("[+] Enter ciphertext : "))
+                choose6 = input("[+] Do you have one or more public key  o/m : ") 
+                phi = (p-1)*(q-1)
+                if choose6 == "o" : 
+                    e = int(input("[+] Enter public key : "))
+                    normalRsa1(n,c,e,phi)
+                else : 
+                        liste = []
+                        choose7 = int(input("[+] Enter number of public key : "))
+                        for i in range(0,choose7) :
+                            e = int(input("[+] Enter public key (e) : "))
+                            liste.append(e)
+                        rsawithe(n,liste,c,phi)
+            else : 
+                print(f"[+] p is = {p}")
+                print(f"[+] q is = {q}")        
+        elif choose1 == "5" : 
+            n = int(input("[+] Enter modulus : "))
+            e1 = int(input("[+] Enter exponent first equation : "))
+            a1 = int(input("[+] Enter first number a : "))
+            c1 = int(input("[+] Enter ciphertext 1 : "))
+            e2 = int(input("[+] Enter exponent second equation : "))
+            a2 = int(input("[+] Enter second number a : "))
+            c2 = int(input("[+] Enter ciphertext 2 : "))
+            p ,q = modularBionmials(e1,e2,c1,c2,n,a1,a2)
+            print(f"\n\n[+] p = {p}")
+            print(f"\n[+] q = {q}")
+except Exception : 
+    print("[+] Exiting ...")
