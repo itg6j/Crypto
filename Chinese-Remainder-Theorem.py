@@ -7,20 +7,14 @@ def CommonModula (Common1,Common):
     Common2 = 1
     list1 = []
     for i in Common1:
-        Common2 = Common / int(i)
+        Common2 = Common // int(i)
         list1.append(Common2)
     return list1
 def inverse(list1,set2):
     list2 = []
     y = list(zip(list1,set2))
     for i,j in y : 
-        num = 1 
-        while True:
-            x = (i*num)%int(j)
-            if x == 1.0 : 
-                list2.append(num)
-                break
-            num+=1
+        list2.append(pow(int(i), -1, int(j)))
     return list2
 def findx(Common,Common2,inverse1,set1) : 
     a = list(zip(Common2,inverse1,set1))
@@ -38,8 +32,8 @@ print(numberOfModulus)
 set1 = []
 set2 = []
 for i in range(0,numberOfModulus): 
-    a = input("Enter a : ")
     m = input("Enter m : ")
+    a = input("Enter a : ")
     set1.append(a)
     set2.append(m)
 Common = CommonModulus(set2)
