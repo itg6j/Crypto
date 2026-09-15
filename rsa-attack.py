@@ -147,6 +147,55 @@ def ell(n,e,c,phi) :
     pt = pow(c, d, n)
     decrypted = long_to_bytes(pt)
     print(decrypted)
+def wienerAttack (n,e,c=None) : 
+    strtime = time.time()
+    qs = []
+    a = e
+    b = n
+    while True:
+        q = a // b
+        r = a % b
+        qs.append(q)
+        a = b
+        b = r
+        if r == 0:
+            break
+    k_list = []  
+    d_list = []  
+    h0, h1 = 0, 1
+    k0, k1 = 1, 0
+    for q in qs:
+        h_next = q * h1 + h0
+        k_next = q * k1 + k0
+        k_list.append(h_next)
+        d_list.append(k_next)
+        h0 = h1
+        h1 = h_next
+        k0 = k1
+        k1 = k_next
+    for k, d in zip(k_list, d_list):
+            if k == 0:
+                continue
+            if (e * d - 1) % k != 0:
+                continue
+            if time.time()- strtime >=60 :
+                print("[+] Time out = 60 Wiener attack")
+                return None,None
+            phi = (e * d - 1) // k
+            s = n - phi + 1
+            delta = s * s - 4 * n
+            if delta >= 0:
+                root = math.isqrt(delta)
+                if root * root == delta: 
+                    p = (s + root) // 2
+                    q = (s - root) // 2
+                    if c == None : 
+                        return p ,q 
+                    m = pow(c, d, n)
+                    print(f"[+] message = {m}")
+                    length = (m.bit_length() + 7) // 8
+                    flag = m.to_bytes(length, 'big')
+                    return flag.decode('utf-8', errors='ignore')
 def trialDivision(n) : 
 
     x = isqrt(n)
@@ -249,6 +298,8 @@ def bruteforce(n) :
                     p,q = ECM(n)
                 except : 
                     print("[+] Time out = 60 Elliptic Curve Factorization")
+                    if p is None and q is None : 
+                        p,q = wienerAttack(n,e,None)
     print(f"[+] factor is p = {p} q = {q}")
     return p,q
 def factoringWithKnownTotient(n,phi) : 
@@ -316,14 +367,16 @@ try :
     if choose == "f" : 
         n = input("[+] Enter modulus : ")
         n = helloman(n)
+        print("[+] n :",n)
         status , factor1 = factor(n) 
         if status == "FF" :
             print("[+] factor :",factor1)
             bruteforce(n)
         elif status =="C" :
             choose1 = input("[+] you know phi or Totient y/n : ") 
-            phi = int(input("[+] Enter phi : "))
             if choose1 == "y" : 
+                phi = input("[+] Enter phi : ")
+                phi = helloman(phi)
                 factoringWithKnownTotient(n,phi)
             else : 
                 bruteforce(n)
@@ -333,7 +386,8 @@ try :
         print("[+] Standard RSA Attack (Given: n, e, c)")
         print("[+] Elliptic Curve Factorization Method(ECM)")
         print("[+] Factorization N given d (n,d,c,e)")
-        print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2)\n")
+        print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2")
+        print("[+] Wiener's Attack (e,c,n)\n")
         choose1 = input("Enter number  (1,2,...): ")
         if choose1 == "2" : 
             n = int(input("[+] Enter modulus : "))
@@ -361,16 +415,24 @@ try :
             else: 
                 print(Style.BRIGHT+Fore.RED+"[-]"+Style.RESET_ALL+" known")
         elif choose1 == "1" : 
-            c = int(input("[+] Enter ciphertext : "))
-            dp = int(input("[+] Enter dp : "))
-            dq = int(input("[+] Enter dq : "))
-            p = int(input("[+] Enter p : "))
-            q = int(input("[+] Enter q : "))
+            c = input("[+] Enter ciphertext : ")
+            c = helloman(c)
+            dp = input("[+] Enter dp : ")
+            dp = helloman(dp)
+            dq = input("[+] Enter dq : ")
+            dq = helloman(dq)
+            p = input("[+] Enter p : ")
+            p = helloman(p)
+            q = input("[+] Enter q : ")
+            q = helloman(q)
             CRTRSA(c,dp,dq,p,q)
         elif choose1 == "3" : 
-            n = int(input("[+] Enter modulus : "))
-            c = int(input("[+] Enter ciphertext : "))
-            e = int(input("[+] Enter public key : "))
+            n = input("[+] Enter modulus : ")
+            n = helloman(n)
+            c = input("[+] Enter ciphertext : ")
+            c = helloman(c)
+            e = input("[+] Enter public key : ")
+            e = helloman(e)
             p,q = ECM(n)
             phi = 1
             print(p)
@@ -380,7 +442,17 @@ try :
             print(phi)
             ell(n,e,c,phi)
         elif choose1 == "4" : 
-            n = int(input("[+] Enter modulus : "))
+            asd = input("[+] Do you have factor or modulus f/m ? :")
+            if asd == "m" : 
+                n = int(input("[+] Enter modulus : "))
+            else : 
+                p = int(input("[+] Enter first facotr : "))
+                q = int(input("[+] Enter second factor : "))
+                if isPrime(p) == False : 
+                    print(f"[+] p is not prime")
+                if isPrime(q) == False : 
+                    print(f"[+] p is not prime")
+                n = p*q
             e = 65537
             d = int(input("[+] Enter private key : "))
             p ,q = factorizationNgivenD(n,e,d)
@@ -390,7 +462,8 @@ try :
                 print(f"[+] p is not prime")
             choose5 = input("[+] Do you want decrypt message y/n??")
             if choose5 == "y" : 
-                c = int(input("[+] Enter ciphertext : "))
+                c = input("[+] Enter ciphertext : ")
+                c = helloman(c)
                 choose6 = input("[+] Do you have one or more public key  o/m : ") 
                 phi = (p-1)*(q-1)
                 if choose6 == "o" : 
@@ -417,5 +490,11 @@ try :
             p ,q = modularBionmials(e1,e2,c1,c2,n,a1,a2)
             print(f"\n\n[+] p = {p}")
             print(f"\n[+] q = {q}")
+        elif choose1 == "6" : 
+            n = int(input("[+] Enter modulus : "))
+            e = int(input("[+] Enter public key : "))
+            c = int(input("[+] Enter ciphertext : "))
+            plaintext = wienerAttack(n,e,c)
+            print("[+] Message :",plaintext)
 except Exception : 
     print("[+] Exiting ...")
