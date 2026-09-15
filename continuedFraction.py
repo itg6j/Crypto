@@ -1,13 +1,16 @@
 a = int(input("[+] Enter first number : "))
 b = int(input("[+] Enter second number : "))
-list1=[]
+d=[]
+k = []
 while True : 
     q = a//b 
-    list1.append(q)
+    d.append(q)
     r = a%b
+    k.append(r)
     a = b 
     b = r
     print(q)
     if r == 0 : 
         break 
-print(list1)
+print("quotient :",d)
+print("reminder :",k)
