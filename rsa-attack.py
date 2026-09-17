@@ -292,6 +292,7 @@ def bruteforce(n) :
     else : 
         p,q = Pollard(n)
         if p is None and q is None : 
+            print("[+] Time out = 60 Pollard P-1")
             p,q = fermatFactorization(n)
             if p is None and q is None : 
                 try:
