@@ -1,6 +1,8 @@
 from Crypto.Util.number import GCD,long_to_bytes,isPrime,inverse,isPrime
 from factordb.factordb import FactorDB
 from colorama import Style,Fore
+from Cryptodome.Util import number
+from itertools import combinations
 import gmpy2
 from math import isqrt
 import math
@@ -363,6 +365,24 @@ def modularBionmials(e1,e2,c1,c2,N,a1,a2) :
     q = GCD(pow(a2,(-e2 * e1),N) * pow(c2, e1, N) - pow(a1, (-e1 * e2), N) * pow(c1, e2, N), N)
     p = N//q
     return p ,q 
+def hastadattack(nlist,e,clist) : 
+    for grp in combinations(zip(nlist, clist), e):
+        N = 1
+        for x in grp:
+            N *= x[0]
+        M = 0
+        for x in grp:
+            ni, ci = x[0], x[1]
+            Ni = N // ni
+            try:
+                ui = inverse(Ni, ni)
+                M = (M + ci * ui * Ni) % N
+            except ValueError:
+                break
+        else:
+            m, exact = gmpy2.iroot(M, e)
+            if exact:
+                return "[+] Flag / Message:", long_to_bytes(int(m)).decode('utf-8', errors='ignore')
 choose =input("[+] Do you want factor n or you have c,e,n and do you want attack f/a ?? :")
 try : 
     if choose == "f" : 
@@ -388,7 +408,8 @@ try :
         print("[+] Elliptic Curve Factorization Method(ECM)")
         print("[+] Factorization N given d (n,d,c,e)")
         print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2")
-        print("[+] Wiener's Attack (e,c,n)\n")
+        print("[+] Wiener's Attack (e,c,n)")
+        print("[+] Hastad's Broadcast Attack k(n,e,c)\n")
         choose1 = input("Enter number  (1,2,...): ")
         if choose1 == "2" : 
             n = int(input("[+] Enter modulus : "))
@@ -497,5 +518,17 @@ try :
             c = int(input("[+] Enter ciphertext : "))
             plaintext = wienerAttack(n,e,c)
             print("[+] Message :",plaintext)
+        elif choose1 == "7" : 
+            nlist = []
+            clist = []
+            num = int(input("[+] Enter total number of round (must r>=e): "))
+            e = int(input("[+] Enter public key : "))
+            for i in range(num):
+                n = int(input(f"[+] Enter modulus : "))
+                c = int(input(f"[+] Enter ciphertext : "))
+                nlist.append(n)
+                clist.append(c)
+            x = hastadattack(nlist,e,clist)
+            print(x)
 except Exception : 
     print("[+] Exiting ...")
