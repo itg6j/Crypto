@@ -21,12 +21,14 @@ def additionPoint(x1,y1,x2,y2,a,p):
     x3 = (s**2 - x1 - x2) % p
     y3 = (s * (x1 - x3) - y1) % p
     return x3, y3
-print("[+] Do you want know just one point what inverse it or point Negation ??")
+print("="*45)
+print("\n[+] Do you want know just one point what inverse it or point Negation ??")
 print("[+] Do you want all point  galois field ??")
 print("[+] Do you want check if  the point at infinity ?? ")
 print("[+] Elliptic Curve Discrete Logarithm Problem ")
 print("[+] Do you want addition point ")
-print("[+] Hasse's theorem the number of points on the curve is dentoted : ")
+print("[+] Hasse's theorem the number of points on the curve is dentoted \n")
+print("="*45)
 point = input("[+] Enter number 1,2 ... : ")
 p = int(input("[+] Enter GF (galois field): "))
 if isprime(p) == False: 
@@ -83,7 +85,7 @@ elif point == "2".lower() :
     point1 = input("[+] Do you want Drawing this point y/n : ")
     if point1 == "y".lower() :
         try :  
-            plotext.clf()
+            plotext.clear_figure()
             plotext.plotsize(90, 25)
             plotext.scatter(xPoints, yPoints, marker="dot")
             ticks = list(range(0, p))
@@ -95,8 +97,8 @@ elif point == "2".lower() :
             plotext.theme("dark")
             plotext.show()
             exit()
-        except Exception : 
-            print("[+] Error")
+        except Exception  as saif: 
+            print(f"[+] Error {saif}")
     else : 
         exit()
 elif point == "3" : 
@@ -132,24 +134,27 @@ elif point == "4" :
         count1 = count1 + 1 
         print(f"[+] {count1}P = {i}")
 elif point == "5" : 
-    count = int(input("[+] Enter number of point : "))
-    if count >=3 : 
-            list1 = []
-            x = int(input("[+] Enter x point : "))
-            y = int(input("[+] Enter y point : "))
-            for i in range(count-1) : 
-                x1 = int(input("[+] Enter x point : "))
-                y1 = int(input("[+] Enter y point : "))
-                x3,y3 = additionPoint(x,y,x1,y1,a1,p)
-                x , y = x3,y3
-                print(f"[+] point is P({x},{y})")
-    else :          
-        x = int(input("[+] Enter x first point : "))
-        y = int(input("[+] Enter y first point : "))
-        x1 = int(input("[+] Enter x second point : "))
-        y1 = int(input("[+] Enter y second point : "))
-        x3,y3 = additionPoint(x1,y1,x1,y1,a1,p)
-        print(f"[+] point is P({x3},{y3})")
+    def point5():
+        count = int(input("[+] Enter number of point : "))
+        if count >=3 : 
+                list1 = []
+                x = int(input("[+] Enter x point : "))
+                y = int(input("[+] Enter y point : "))
+                for i in range(count-1) : 
+                    x1 = int(input("[+] Enter x point : "))
+                    y1 = int(input("[+] Enter y point : "))
+                    x3,y3 = additionPoint(x,y,x1,y1,a1,p)
+                    x , y = x3,y3
+                    print(f"[+] point is P({x},{y})")
+        else :          
+            x = int(input("[+] Enter x first point : "))
+            y = int(input("[+] Enter y first point : "))
+            x1 = int(input("[+] Enter x second point : "))
+            y1 = int(input("[+] Enter y second point : "))
+            x3,y3 = additionPoint(x1,y1,x1,y1,a1,p)
+            return x3,y3
+    x3,y3 = point5()
+    print(f"[+] point is P({x3},{y3})")
 elif point == "6" : 
     x = (p+1)-(2*sqrt(p))
     y = (p+1)+(2*sqrt(p))
