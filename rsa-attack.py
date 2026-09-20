@@ -2,6 +2,7 @@ from Crypto.Util.number import GCD,long_to_bytes,isPrime,inverse,isPrime
 from factordb.factordb import FactorDB
 from colorama import Style,Fore
 from Cryptodome.Util import number
+from Crypto.PublicKey import RSA
 from itertools import combinations
 import gmpy2
 from math import isqrt
@@ -254,7 +255,7 @@ def PollardRho(n) :
             if n == n1 : 
                 print(f"[+] {n1} = {d} x {q}: ",True)
             break 
-    return p,d
+    return q,d
 def fermatFactorization(n) : 
     strtime = time.time()
     timeout = 60
@@ -287,24 +288,35 @@ def factor(n) :
     y = f.get_factor_list()
     return x,y
 def bruteforce(n) : 
-    if len(str(n))<= 8 :
-        p,q = trialDivision(n)
-    elif len(str(n))<= 12 :
-        p,q = PollardRho(n)
-    else : 
-        p,q = Pollard(n)
-        if p is None and q is None : 
-            print("[+] Time out = 60 Pollard P-1")
-            p,q = fermatFactorization(n)
-            if p is None and q is None : 
-                try:
-                    p,q = ECM(n)
-                except : 
-                    print("[+] Time out = 60 Elliptic Curve Factorization")
-                    if p is None and q is None : 
-                        p,q = wienerAttack(n,e,None)
-    print(f"[+] factor is p = {p} q = {q}")
-    return p,q
+    p, q = None, None
+    if len(str(n)) <= 10:
+        return trialDivision(n)
+    if len(str(n)) <= 25:
+        p, q = PollardRho(n)
+        if p and q:
+            return p, q
+        
+    p, q = fermatFactorization(n)
+    if p and q:
+        return p, q
+    p, q = Pollard(n)
+    if p and q:
+        return p, q
+    put = input("[+] Do you have e y/n : ")
+    if put == "y" : 
+        e = input("[+] Enter e : ")
+        p, q = wienerAttack(n, e)
+        if p and q:
+            return p, q
+    try:
+        p, q = ECM(n)
+    except Exception as err:
+        print(f"[+] ECM failed or timed out: {err}")
+    if p and q:
+        print(f"[+] factor is p = {p}, q = {q}")
+    else:
+        print("[+] Factorization failed")
+    return p, q
 def factoringWithKnownTotient(n,phi) : 
     s= n - phi + 1
     delta = s**2 - 4 * n
@@ -409,7 +421,8 @@ try :
         print("[+] Factorization N given d (n,d,c,e)")
         print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2")
         print("[+] Wiener's Attack (e,c,n)")
-        print("[+] Hastad's Broadcast Attack k(n,e,c)\n")
+        print("[+] Hastad's Broadcast Attack k(n,e,c)")
+        print("[+] Privacy Enhanced Mail (.pem) or (a whole bunch of base64)\n")
         choose1 = input("Enter number  (1,2,...): ")
         if choose1 == "2" : 
             n = int(input("[+] Enter modulus : "))
@@ -530,5 +543,25 @@ try :
                 clist.append(c)
             x = hastadattack(nlist,e,clist)
             print(x)
+        elif choose1 == "8" : 
+            pem_data = input("[+] Enter path : ").strip()
+            try : 
+                with open(pem_data,"r") as file : 
+                    pem_data = file.read()
+                key = RSA.import_key(pem_data)
+                if key.has_private():
+                    print("[+] Type: Private Key")
+                    print(f"[+] Modulus (n): {key.n}")
+                    print(f"[+] Public Exponent (e): {key.e}")
+                    print(f"[+] Private Exponent (d): {key.d}")
+                    print(f"[+] Prime 1 (p): {key.p}")
+                    print(f"[+] Prime 2 (q): {key.q}")
+                else:
+                    print("[+] Type: Public Key")
+                    print(f"[+] Modulus (n): {key.n}")
+                    print(f"[+] Public Exponent (e): {key.e}")
+                    print("[+] Private components (d, p, q) are NOT available in this key.")
+            except Exception : 
+                print("[+]wrong path")
 except Exception : 
     print("[+] Exiting ...")
