@@ -291,23 +291,27 @@ def bruteforce(n) :
     p, q = None, None
     if len(str(n)) <= 10:
         return trialDivision(n)
+    print("[+] Faild trialDivision")
     if len(str(n)) <= 25:
         p, q = PollardRho(n)
         if p and q:
             return p, q
-        
+    print("[+] Faild Pollard Rho")
     p, q = fermatFactorization(n)
     if p and q:
         return p, q
+    print("[+] Faild Fermat Factorization")
     p, q = Pollard(n)
     if p and q:
         return p, q
+    print("[+] Faild Pollard P-1 ")
     put = input("[+] Do you have e y/n : ")
     if put == "y" : 
         e = input("[+] Enter e : ")
         p, q = wienerAttack(n, e)
         if p and q:
             return p, q
+    print("[+] Faild Wiener Attack ")
     try:
         p, q = ECM(n)
     except Exception as err:
@@ -411,6 +415,7 @@ try :
                 phi = helloman(phi)
                 factoringWithKnownTotient(n,phi)
             else : 
+                print("[+] Faild Factoring With Known Totient")
                 bruteforce(n)
     elif choose == "a" : 
         print("="*45)
