@@ -351,7 +351,7 @@ def factorizationNgivenD(n,e,d) :
             p = common
             q = n // p
             print(f"[+] p = {p} q ={q}")
-            break
+            return p , q 
         t = k//2
         while t % 2 == 0:
                 t //= 2
@@ -361,8 +361,7 @@ def factorizationNgivenD(n,e,d) :
                     if 1 < y < n:
                         p = y
                         q = n // p
-                        break
-        return p , q 
+                        return p , q 
 def rsawithe(n,e,c,phi) : 
     d_values = []
     for  i in e:
