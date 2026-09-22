@@ -24,12 +24,11 @@ def Generatekey(x) :
         d = hash1[0:32]
     return d
 def converhextoint(n) : 
-    if type(n) == str : 
-        if n.startswith("0x") : 
-            x = n[2:]
-            y = bytes.fromhex(x)
-            z = int.from_bytes(y)
-            return z
+    if n.startswith("0x") : 
+        x = n[2:]
+        y = bytes.fromhex(x)
+        z = int.from_bytes(y)
+        return z
     return int(n)
 def additionPoint(x1, y1, x2, y2, a, p):
     if x1 is None: return x2, y2
@@ -81,7 +80,7 @@ def tonelli_shanks(n, p):
         b = pow(c, 1 << (m - i - 1), p)
         m, c, t, r = i, (b * b) % p, (t * b * b) % p, (r * b) % p
     return r
-p1 = int(input("[+] Enter GF (galois field): "))
+p1 = input("[+] Enter GF (galois field): ")
 p = converhextoint(p1)
 if not isprime(p):
     print("[+] Not prime")
@@ -89,9 +88,9 @@ if not isprime(p):
 if p <= 3:
     print("[+] p is so small")
     exit()
-a2 = int(input("[+] Enter a : "))
+a2 = input("[+] Enter a : ")
 a1 = converhextoint(a2)
-b2 = int(input("[+] Enter b : "))
+b2 = input("[+] Enter b : ")
 b1 = converhextoint(b2)
 px = int(input("[+] Enter Px : ")) % p
 py = int(input("[+] Enter Py : ")) % p
@@ -159,18 +158,21 @@ else:
                 print(f"[+] x : {shared_x} , y : {shared_y}")
                 print(f"[+] The secret key is {shared_x} ")
             else : 
-                point3 = input("[+] Do you have public point for one : ")
-                if point3 == "y" :
-                    E = EllipticCurve(GF(p), [a1, b1])
-                    Qax = int(input("[+] Enter x : "))
-                    Qay = int(input("[+] Enter y : "))
-                    Q_A = E(Qax,Qay)
-                    G = E(px,py)
-                    nA = discrete_log(Q_A, G, operation='+')
-                    print("[+] The secret Key :",nA)
+                print("[+] point not true")
         else : 
-            print("[+] Exit ...")
-            sys.exit()
+            point3 = input("[+] Do you have public point for one : ")
+            if point3 == "y" :
+                E = EllipticCurve(GF(p), [a1, b1])
+                Qax = int(input("[+] Enter x : "))
+                Qay = int(input("[+] Enter y : "))
+                Q_B = E(Qax,Qay)
+                G = E(px,py)
+                nA = discrete_log(Q_A, G, operation='+')
+                shared1 = nA*Q_B
+                shared_x = shared1[0]
+                shared_y = shared1[1]
+                print(f"[+] x : {shared_x} , y : {shared_y}")
+                print(f"[+] The secret key is {shared_x} ")
 while True : 
     x = input("[+] Do you want decrypt ? y/n: ")
     if x == "y" :
