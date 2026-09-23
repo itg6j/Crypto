@@ -11,6 +11,7 @@ import sys
 import time
 from random import randint
 from sage.all import *
+from cryptography import x509
 ##FF : Fully Factored (the number is completely factored into primes)
 ##CF : Composite with some factors known (incompletely factored)
 ##C : Composite , but no factpr are know yet
@@ -426,7 +427,8 @@ try :
         print("[+] Modular Binomials (e1,e2,N,c1,c2,a1,a2")
         print("[+] Wiener's Attack (e,c,n)")
         print("[+] Hastad's Broadcast Attack k(n,e,c)")
-        print("[+] Privacy Enhanced Mail (.pem) or (a whole bunch of base64)\n")
+        print("[+] Privacy Enhanced Mail (.pem) or (a whole bunch of base64)")
+        print("[+] CERTainly not (.der)\n")
         choose1 = input("Enter number  (1,2,...): ")
         if choose1 == "2" : 
             n = int(input("[+] Enter modulus : "))
@@ -567,5 +569,16 @@ try :
                     print("[+] Private components (d, p, q) are NOT available in this key.")
             except Exception : 
                 print("[+]wrong path")
+        elif choose1 == "9" : 
+            pem_data = input("[+] Enter path : ").strip()
+            with open(pem_data, "rb") as f:
+                der_data = f.read()
+            cert = x509.load_der_x509_certificate(der_data)
+            pub_key = cert.public_key()
+            pub_numbers = pub_key.public_numbers()
+            n = pub_numbers.n
+            e = pub_numbers.e
+            print("[+] Modulus (n):", n)
+            print("\n[+] Exponent (e):", e)
 except Exception : 
     print("[+] Exiting ...")
